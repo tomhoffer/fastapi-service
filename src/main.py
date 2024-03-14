@@ -17,7 +17,8 @@ records_db = RecordsDbRepository(dbname="pm_assignment", user="PM_user", passwor
 
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request, exc):
-    # Use 400 Bad request status code and replace the default Pydantic message as it exposes the Pydantic version used (security)
+    # Use 400 Bad request status code and replace the default Pydantic message
+    # as it exposes the Pydantic version used (security)
     return PlainTextResponse("Invalid payload provided! Please check the API documentation.", status_code=400)
 
 

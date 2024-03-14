@@ -11,3 +11,11 @@ services:
       - POSTGRES_PASSWORD=PM_password
       - POSTGRES_USER=PM_user
       - POSTGRES_DB=pm_assignment
+
+  fastapi-server:
+    ports:
+      - 80:80
+    build: .
+    container_name: fastapi-server
+    depends_on:
+      - postgres

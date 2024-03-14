@@ -10,7 +10,7 @@ class TestInsertUserIntoDatabase(DbIntegrationTestBase):
         # Test that user with given email and text was correctly inserted into the database
         email = 'dummy@gmail.com'
         text = 'example text'
-        records_db = RecordsDbRepository(dbname="test_db", user="PM_user", password="PM_password", host="localhost")
+        records_db = RecordsDbRepository(dbname="test_db", user="PM_user", password="PM_password", host="postgres")
         records_db.create_record(email, text)
 
         # Verify that the row has been inserted
@@ -24,7 +24,7 @@ class TestInsertUserIntoDatabase(DbIntegrationTestBase):
         email = 'invalid_email'
         text = 'example text'
 
-        records_db = RecordsDbRepository(dbname="test_db", user="PM_user", password="PM_password", host="localhost")
+        records_db = RecordsDbRepository(dbname="test_db", user="PM_user", password="PM_password", host="postgres")
 
         # Assert that exception was raised based on DB constraint violation
         with pytest.raises(DbUnableToInsertRowException):
@@ -47,7 +47,7 @@ class TestInsertUserIntoDatabase(DbIntegrationTestBase):
             cursor.execute("INSERT INTO records (email, text) VALUES (%s, %s)", (email, old_text))
 
         # Update the text
-        records_db = RecordsDbRepository(dbname="test_db", user="PM_user", password="PM_password", host="localhost")
+        records_db = RecordsDbRepository(dbname="test_db", user="PM_user", password="PM_password", host="postgres")
         records_db.create_record(email, new_text)
 
         # Verify that the row has been updated

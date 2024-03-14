@@ -6,7 +6,7 @@ class DbIntegrationTestBase:
     def setup_class(cls):
         # Set up a connection to the PostgreSQL database
         cls.postgresql_connection = psycopg2.connect(
-            "dbname=test_db user=PM_user host=localhost password=PM_password")
+            "dbname=test_db user=PM_user host=postgres password=PM_password")
         cls.postgresql_connection.set_session(autocommit=True)
 
     @classmethod

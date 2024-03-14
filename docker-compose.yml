@@ -19,3 +19,10 @@ services:
     container_name: fastapi-server
     depends_on:
       - postgres
+
+  intg-api-tests:
+    build:
+      dockerfile: Dockerfile-intg-api-test
+    container_name: tests
+    depends_on:
+      - postgres

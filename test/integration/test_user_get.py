@@ -14,7 +14,7 @@ class TestDeleteUserFromDatabase(DbIntegrationTestBase):
             cursor.execute("INSERT INTO records (email, text) VALUES (%s, %s)", (email, text))
 
             # Get user
-            records_db = RecordsDbRepository(dbname="test_db", user="PM_user", password="PM_password", host="localhost")
+            records_db = RecordsDbRepository(dbname="test_db", user="PM_user", password="PM_password", host="postgres")
             result = records_db.get_record_by_email(email)
 
             # Verify obtained user
@@ -27,7 +27,7 @@ class TestDeleteUserFromDatabase(DbIntegrationTestBase):
         with self.postgresql_connection.cursor() as cursor:
             # Get user
             records_db = RecordsDbRepository(dbname="test_db", user="PM_user", password="PM_password",
-                                             host="localhost")
+                                             host="postgres")
             result = records_db.get_record_by_email('some_email@gmail.com')
 
             # Verify obtained user

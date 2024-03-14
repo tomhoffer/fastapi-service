@@ -14,7 +14,7 @@ class TestDeleteUserFromDatabase(DbIntegrationTestBase):
             cursor.execute("INSERT INTO records (email, text) VALUES (%s, %s)", (email, text))
 
             # Delete the user
-            records_db = RecordsDbRepository(dbname="test_db", user="PM_user", password="PM_password", host="localhost")
+            records_db = RecordsDbRepository(dbname="test_db", user="PM_user", password="PM_password", host="postgres")
             records_db.delete_record(email)
 
             # Verify that user was deleted

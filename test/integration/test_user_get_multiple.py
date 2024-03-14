@@ -19,7 +19,7 @@ class TestDeleteUserFromDatabase(DbIntegrationTestBase):
                 cursor.execute("INSERT INTO records (email, text) VALUES (%s, %s)", (email, 'some text'))
 
             # Get multiple users
-            records_db = RecordsDbRepository(dbname="test_db", user="PM_user", password="PM_password", host="localhost")
+            records_db = RecordsDbRepository(dbname="test_db", user="PM_user", password="PM_password", host="postgres")
             result = records_db.get_multiple_records(limit=10, offset=0)
 
             # Verify obtained users
@@ -37,7 +37,7 @@ class TestDeleteUserFromDatabase(DbIntegrationTestBase):
                 cursor.execute("INSERT INTO records (email, text) VALUES (%s, %s)", (email, 'some text'))
 
             # Get multiple users
-            records_db = RecordsDbRepository(dbname="test_db", user="PM_user", password="PM_password", host="localhost")
+            records_db = RecordsDbRepository(dbname="test_db", user="PM_user", password="PM_password", host="postgres")
             result = records_db.get_multiple_records(limit=15, offset=0)
 
             # Verify obtained users
@@ -53,7 +53,7 @@ class TestDeleteUserFromDatabase(DbIntegrationTestBase):
                 cursor.execute("INSERT INTO records (email, text) VALUES (%s, %s)", (email, 'some text'))
 
             # Get multiple users
-            records_db = RecordsDbRepository(dbname="test_db", user="PM_user", password="PM_password", host="localhost")
+            records_db = RecordsDbRepository(dbname="test_db", user="PM_user", password="PM_password", host="postgres")
             result = records_db.get_multiple_records(limit=5, offset=5)
 
             # Verify obtained users
@@ -69,7 +69,7 @@ class TestDeleteUserFromDatabase(DbIntegrationTestBase):
 
         with self.postgresql_connection.cursor() as cursor:
             # Get users
-            records_db = RecordsDbRepository(dbname="test_db", user="PM_user", password="PM_password", host="localhost")
+            records_db = RecordsDbRepository(dbname="test_db", user="PM_user", password="PM_password", host="postgres")
             result = records_db.get_multiple_records(limit=10, offset=0)
 
             # Verify obtained users

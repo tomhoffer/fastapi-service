@@ -4,6 +4,7 @@ from starlette.responses import PlainTextResponse
 from src.db import RecordsDbRepository
 from src.exceptions import JsonToXmlConversionException, XmlToJsonConversionException
 from src.json2xml import JsonToXmlParser
+from src.models import EmailRecord
 from src.xml2json import XmlToJsonParser
 
 app = FastAPI()
@@ -56,6 +57,13 @@ async def post_record_by_email(payload: EmailRecord, email: str | None = None):
     if not email:
         raise HTTPException(status_code=400, detail="No email provided")
     records_db.create_record(email, payload.text)
+
+
+@app.delete("/user")
+async def delete_record_by_email(email: str | None = None):
+    if not email:
+        raise HTTPException(status_code=400, detail="No email provided")
+    records_db.delete_record(email)
 
 
 @app.get("/users")

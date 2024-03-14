@@ -41,3 +41,7 @@ class RecordsDbRepository(DbConnector):
         with self.connection.cursor() as curs:
             curs.execute("SELECT text FROM records WHERE email = %s", (email,))
             return curs.fetchone()
+
+    def delete_record(self, email: str) -> None:
+        with self.connection.cursor() as curs:
+            return curs.execute("DELETE FROM records WHERE email = %s", (email,))

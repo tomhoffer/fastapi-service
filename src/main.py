@@ -56,3 +56,10 @@ async def post_record_by_email(payload: EmailRecord, email: str | None = None):
     if not email:
         raise HTTPException(status_code=400, detail="No email provided")
     records_db.create_record(email, payload.text)
+
+
+@app.get("/users")
+async def get_multiple_users(limit: int | None = 10, offset: int | None = 0):
+    if limit < 0 or offset < 0:
+        raise HTTPException(status_code=400, detail="Invalid limit or offset provided!")
+    return records_db.get_multiple_records(limit, offset)

@@ -23,6 +23,6 @@ services:
   intg-api-tests:
     build:
       dockerfile: Dockerfile-intg-api-test
-    container_name: tests
+    container_name: intg-api-tests
     depends_on:
       - postgres

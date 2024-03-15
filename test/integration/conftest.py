@@ -1,4 +1,15 @@
 import psycopg2
+import pytest
+
+from src.config import Config
+from src.db import RecordsDbRepository
+
+
+@pytest.fixture
+def records_db():
+    return RecordsDbRepository(dbname=Config.get_value('POSTGRES_DB_NAME'), user=Config.get_value('POSTGRES_DB_USER'),
+                               password=Config.get_value('POSTGRES_DB_PASSWORD'),
+                               host=Config.get_value('POSTGRES_DB_HOST'))
 
 
 class DbIntegrationTestBase:
@@ -6,7 +17,9 @@ class DbIntegrationTestBase:
     def setup_class(cls):
         # Set up a connection to the PostgreSQL database
         cls.postgresql_connection = psycopg2.connect(
-            "dbname=test_db user=PM_user host=postgres password=PM_password")
+            dbname=Config.get_value('POSTGRES_DB_NAME'), user=Config.get_value('POSTGRES_DB_USER'),
+            password=Config.get_value('POSTGRES_DB_PASSWORD'),
+            host=Config.get_value('POSTGRES_DB_HOST'))
         cls.postgresql_connection.set_session(autocommit=True)
 
     @classmethod
@@ -18,7 +31,7 @@ class DbIntegrationTestBase:
         # Setup: Create a temporary table
         cursor = self.postgresql_connection.cursor()
         cursor.execute("""
-            CREATE TABLE records (
+            CREATE TABLE IF NOT EXISTS records (
                 id SERIAL PRIMARY KEY,
                 email domain_email UNIQUE,
             text VARCHAR(100)

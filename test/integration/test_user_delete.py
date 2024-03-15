@@ -1,10 +1,9 @@
-from src.db import RecordsDbRepository
-from test.integration.fixtures import DbIntegrationTestBase
+from test.integration.conftest import DbIntegrationTestBase
 
 
 class TestDeleteUserFromDatabase(DbIntegrationTestBase):
 
-    def test_user_delete(self):
+    def test_user_delete(self, records_db):
         # Test that user with given email was deleted from the database
         email = 'dummy@gmail.com'
         text = 'example text'
@@ -14,7 +13,6 @@ class TestDeleteUserFromDatabase(DbIntegrationTestBase):
             cursor.execute("INSERT INTO records (email, text) VALUES (%s, %s)", (email, text))
 
             # Delete the user
-            records_db = RecordsDbRepository(dbname="test_db", user="PM_user", password="PM_password", host="postgres")
             records_db.delete_record(email)
 
             # Verify that user was deleted

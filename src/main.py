@@ -1,6 +1,8 @@
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.exceptions import RequestValidationError
 from starlette.responses import PlainTextResponse
+
+from src.config import Config
 from src.db import RecordsDbRepository
 from src.exceptions import JsonToXmlConversionException, XmlToJsonConversionException
 from src.json2xml import JsonToXmlParser
@@ -12,8 +14,9 @@ json_to_xml_parser = JsonToXmlParser()
 xml_to_json_parser = XmlToJsonParser()
 
 # TODO load configuration from env vars # TODO diff between local dev and docker
-records_db = RecordsDbRepository(dbname="pm_assignment", user="PM_user", password="PM_password",
-                                 host="postgres")
+records_db = RecordsDbRepository(dbname=Config.get_value('POSTGRES_DB_NAME'), user=Config.get_value('POSTGRES_DB_USER'),
+                                 password=Config.get_value('POSTGRES_DB_PASSWORD'),
+                                 host=Config.get_value('POSTGRES_DB_HOST'))
 
 
 @app.exception_handler(RequestValidationError)

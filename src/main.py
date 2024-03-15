@@ -16,6 +16,8 @@ from src.models import EmailRecord
 from src.xml2json import XmlToJsonParser
 
 app = FastAPI()
+app.mount("/static", StaticFiles(directory="src/static", html=True), name="static")
+
 json_to_xml_parser = JsonToXmlParser()
 xml_to_json_parser = XmlToJsonParser()
 logger = logging.getLogger(__name__)

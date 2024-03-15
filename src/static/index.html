@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Send Data to APIs</title>
+    <script>
+        function convertToXml(api_url) {
+            // Get textarea value
+            var textAreaContent = document.getElementById("textareaInput").value;
+
+            // Send data to API
+            fetch(api_url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: textAreaContent
+            })
+                .then(response => {
+                    return response.json();
+                })
+                .then(data => {
+                    // Handle API response
+                    if (typeof data === 'object') {
+                        data = JSON.stringify(data)
+                    }
+
+
+                    console.log('API Response:', data);
+                    document.getElementById("response").textContent = "API Response:\n" + data;
+                })
+                .catch(error => {
+                    // Handle errors
+                    console.error('Error:', error);
+                    document.getElementById("response").innerText = "Error: " + error.message;
+                });
+        }
+    </script>
+</head>
+<body>
+<label for="textareaInput">Enter JSON or XML:</label><br>
+<textarea id="textareaInput" rows="30" cols="70"></textarea><br><br>
+<button onclick="convertToXml('/json2xml')">Convert to XML</button>
+<button onclick="convertToXml('/xml2json')">Convert to JSON</button>
+<br><br>
+<div id="response"></div>
+</body>
+</html>

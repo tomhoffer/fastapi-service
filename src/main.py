@@ -14,16 +14,21 @@ json_to_xml_parser = JsonToXmlParser()
 xml_to_json_parser = XmlToJsonParser()
 
 # TODO load configuration from env vars # TODO diff between local dev and docker
-records_db = RecordsDbRepository(dbname=Config.get_value('POSTGRES_DB_NAME'), user=Config.get_value('POSTGRES_DB_USER'),
-                                 password=Config.get_value('POSTGRES_DB_PASSWORD'),
-                                 host=Config.get_value('POSTGRES_DB_HOST'))
+records_db = RecordsDbRepository(
+    dbname=Config.get_value("POSTGRES_DB_NAME"),
+    user=Config.get_value("POSTGRES_DB_USER"),
+    password=Config.get_value("POSTGRES_DB_PASSWORD"),
+    host=Config.get_value("POSTGRES_DB_HOST"),
+)
 
 
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request, exc):
     # Use 400 Bad request status code and replace the default Pydantic message
     # as it exposes the Pydantic version used (security)
-    return PlainTextResponse("Invalid payload provided! Please check the API documentation.", status_code=400)
+    return PlainTextResponse(
+        "Invalid payload provided! Please check the API documentation.", status_code=400
+    )
 
 
 @app.post("/json2xml")
@@ -52,7 +57,9 @@ async def get_record_by_email(email: str | None = None):
     record = records_db.get_record_by_email(email)
 
     if not record:
-        raise HTTPException(status_code=404, detail="Record for given email was not found")
+        raise HTTPException(
+            status_code=404, detail="Record for given email was not found"
+        )
 
     return record
 

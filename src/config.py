@@ -51,9 +51,10 @@ class Config:
             return value
 
         except ValueError:
-            raise AppConfigError('Unable to cast value of to type "{}" for "{}" field'.format(
-                var_type,
-                value)
+            raise AppConfigError(
+                'Unable to cast value of to type "{}" for "{}" field'.format(
+                    var_type, value
+                )
             )
 
     def __repr__(self):

@@ -9,10 +9,7 @@ class DbConnector:
 
     def __init__(self, dbname: str, user: str, password: str, host: str) -> None:
         self.connection = psycopg2.connect(
-            dbname=dbname,
-            user=user,
-            password=password,
-            host=host
+            dbname=dbname, user=user, password=password, host=host
         )
         self.connection.set_session(autocommit=True)
 
@@ -28,15 +25,21 @@ class RecordsDbRepository(DbConnector):
                 return curs.execute(
                     """INSERT INTO records (email, text) VALUES (%s, %s) ON CONFLICT (email)
                     DO UPDATE SET text = excluded.text""",
-                    (email, text))
+                    (email, text),
+                )
             except psycopg2.errors.CheckViolation:
-                raise DbUnableToInsertRowException(message="Invalid email address provided!")  # TODO log
+                raise DbUnableToInsertRowException(
+                    message="Invalid email address provided!"
+                )  # TODO log
 
     def get_multiple_records(self, limit: int, offset: int) -> Tuple[str, str] | None:
         limit = 10 if limit > 10 else limit
         with self.connection.cursor() as curs:
-            curs.execute("""SELECT email, text FROM records ORDER BY email
-            LIMIT %s OFFSET %s""", (limit, offset))
+            curs.execute(
+                """SELECT email, text FROM records ORDER BY email
+            LIMIT %s OFFSET %s""",
+                (limit, offset),
+            )
             return curs.fetchall()
 
     def get_record_by_email(self, email: str) -> Tuple[str] | None:

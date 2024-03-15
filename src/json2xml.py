@@ -15,12 +15,12 @@ class JsonToXmlParser:
         float: "float",
         list: "list",
         dict: "object",
-        NoneType: "null"
+        NoneType: "null",
     }
 
     def _parse_value(self, value: Any) -> str | None:
         if isinstance(value, bool):
-            return 'true' if value else 'false'
+            return "true" if value else "false"
         elif value is None:
             return None
         else:
@@ -31,11 +31,11 @@ class JsonToXmlParser:
 
     def _mark_item(self, item: Element, key: str | None, value: Any) -> None:
         if key:
-            item.set('key', key)
-        item.set('type', self._parse_type(value))
+            item.set("key", key)
+        item.set("type", self._parse_type(value))
 
     def _parse_item(self, key: str | None, value: Any) -> Element:
-        item = Element('ITEM')
+        item = Element("ITEM")
         self._mark_item(item, key, value)
         if isinstance(value, dict):
             for k, v in value.items():
@@ -45,23 +45,25 @@ class JsonToXmlParser:
                 item.append(self._parse_item(None, v))
         else:
             if value:
-                item.set('value', self._parse_value(value))
+                item.set("value", self._parse_value(value))
         return item
 
     def convert_to_xml(self, data: str):
         try:
             data = json.loads(data)
         except JSONDecodeError:
-            raise JsonToXmlConversionException(message="Invalid JSON provided as input.")
+            raise JsonToXmlConversionException(
+                message="Invalid JSON provided as input."
+            )
 
-        root = Element('ITEM')
+        root = Element("ITEM")
         root_type = self._parse_type(data)
-        root.set('type', root_type)
+        root.set("type", root_type)
 
-        if root_type == 'object':
+        if root_type == "object":
             for key, value in data.items():
                 root.append(self._parse_item(key, value))
-        elif root_type == 'list':
+        elif root_type == "list":
             for v in data:
                 root.append(self._parse_item(None, v))
-        return tostring(root, encoding='unicode')
+        return tostring(root, encoding="unicode")

@@ -1,0 +1,14 @@
+run-integration-api-tests:
+	python -m pytest test/api test/integration
+
+run-unit-tests:
+	python -m pytest test/unit
+
+run-server-local:
+	uvicorn src.main:app --reload --log-config=log_conf.yaml --port 80
+
+run-server-docker:
+	docker compose up fastapi-server
+
+make run-postgres-background:
+	docker compose up -d postgres-dev

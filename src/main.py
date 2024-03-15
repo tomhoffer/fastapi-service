@@ -82,7 +82,10 @@ async def get_record_by_email(email: str | None = None):
 async def post_record_by_email(payload: EmailRecord, email: str | None = None):
     if not email:
         raise HTTPException(status_code=400, detail="No email provided")
-    records_db.create_record(email, payload.text)
+    try:
+        records_db.create_record(email, payload.text)
+    except DbUnableToInsertRowException as e:
+        raise HTTPException(status_code=400, detail=e.message)
 
 
 @app.delete("/user")

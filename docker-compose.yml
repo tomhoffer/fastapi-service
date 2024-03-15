@@ -11,6 +11,11 @@ services:
       - POSTGRES_PASSWORD=PM_password
       - POSTGRES_USER=PM_user
       - POSTGRES_DB=pm_assignment
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U PM_user -d pm_assignment" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   fastapi-server:
     ports:
@@ -18,7 +23,8 @@ services:
     build: .
     container_name: fastapi-server
     depends_on:
-      - postgres-dev
+      postgres-dev:
+        condition: service_healthy
     environment:
       - POSTGRES_DB_PASSWORD=PM_password
       - POSTGRES_DB_USER=PM_user
@@ -30,7 +36,8 @@ services:
       dockerfile: Dockerfile-intg-api-test
     container_name: intg-api-tests
     depends_on:
-      - postgres-dev
+      postgres-dev:
+        condition: service_healthy
     environment:
       - POSTGRES_DB_PASSWORD=PM_password
       - POSTGRES_DB_USER=PM_user

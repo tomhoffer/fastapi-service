@@ -39,5 +39,5 @@ jobs:
 
     - name: Run API and Integration tests
       run: |
-        docker-compose up intg-api-tests --build
+        docker compose up intg-api-tests
 

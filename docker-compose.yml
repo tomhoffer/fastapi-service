@@ -1,7 +1,7 @@
 version: '3.9'
 
 services:
-  postgres:
+  postgres-dev:
     image: postgres:16-alpine
     ports:
       - 5432:5432
@@ -18,11 +18,21 @@ services:
     build: .
     container_name: fastapi-server
     depends_on:
-      - postgres
+      - postgres-dev
+    environment:
+      - POSTGRES_DB_PASSWORD=PM_password
+      - POSTGRES_DB_USER=PM_user
+      - POSTGRES_DB_NAME=pm_assignment
+      - POSTGRES_DB_HOST=postgres-dev
 
   intg-api-tests:
     build:
       dockerfile: Dockerfile-intg-api-test
     container_name: intg-api-tests
     depends_on:
-      - postgres
+      - postgres-dev
+    environment:
+      - POSTGRES_DB_PASSWORD=PM_password
+      - POSTGRES_DB_USER=PM_user
+      - POSTGRES_DB_NAME=pm_assignment
+      - POSTGRES_DB_HOST=postgres-dev

@@ -38,5 +38,7 @@ class XmlToJsonParser:
         try:
             root = ET.fromstring(data)
         except ET.ParseError:
-            raise XmlToJsonConversionException(message="Invalid XML provided as input.")
+            raise XmlToJsonConversionException(
+                message=f"Invalid XML provided as input. Input: {data}"
+            )
         return json.dumps(self._parse_element(root))

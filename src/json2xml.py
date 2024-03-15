@@ -53,7 +53,7 @@ class JsonToXmlParser:
             data = json.loads(data)
         except JSONDecodeError:
             raise JsonToXmlConversionException(
-                message="Invalid JSON provided as input."
+                message=f"Invalid JSON provided as input. Input: {data}"
             )
 
         root = Element("ITEM")

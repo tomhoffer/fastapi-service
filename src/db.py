@@ -1,10 +1,13 @@
-from typing import Tuple
-import psycopg2  # TODO change to source distribution
-
+import psycopg2
+from typing import Tuple, List
 from src.exceptions import DbUnableToInsertRowException
 
 
 class DbConnector:
+    """
+    Connects to the given postgres database
+    """
+
     connection = None
 
     def __init__(self, dbname: str, user: str, password: str, host: str) -> None:
@@ -29,10 +32,10 @@ class RecordsDbRepository(DbConnector):
                 )
             except psycopg2.errors.CheckViolation:
                 raise DbUnableToInsertRowException(
-                    message="Invalid email address provided!"
-                )  # TODO log
+                    message=f"Invalid email address provided! Email: {email}"
+                )
 
-    def get_multiple_records(self, limit: int, offset: int) -> Tuple[str, str] | None:
+    def get_multiple_records(self, limit: int, offset: int) -> List[Tuple[str, str]]:
         limit = 10 if limit > 10 else limit
         with self.connection.cursor() as curs:
             curs.execute(

@@ -1,10 +1,16 @@
+import logging
 from fastapi import FastAPI, Request, HTTPException
+from fastapi.exception_handlers import http_exception_handler
 from fastapi.exceptions import RequestValidationError
 from starlette.responses import PlainTextResponse
-
+from starlette.staticfiles import StaticFiles
 from src.config import Config
 from src.db import RecordsDbRepository
-from src.exceptions import JsonToXmlConversionException, XmlToJsonConversionException
+from src.exceptions import (
+    JsonToXmlConversionException,
+    XmlToJsonConversionException,
+    DbUnableToInsertRowException,
+)
 from src.json2xml import JsonToXmlParser
 from src.models import EmailRecord
 from src.xml2json import XmlToJsonParser
@@ -12,8 +18,8 @@ from src.xml2json import XmlToJsonParser
 app = FastAPI()
 json_to_xml_parser = JsonToXmlParser()
 xml_to_json_parser = XmlToJsonParser()
+logger = logging.getLogger(__name__)
 
-# TODO load configuration from env vars # TODO diff between local dev and docker
 records_db = RecordsDbRepository(
     dbname=Config.get_value("POSTGRES_DB_NAME"),
     user=Config.get_value("POSTGRES_DB_USER"),
@@ -29,6 +35,12 @@ async def validation_exception_handler(request, exc):
     return PlainTextResponse(
         "Invalid payload provided! Please check the API documentation.", status_code=400
     )
+
+
+@app.exception_handler(HTTPException)
+async def custom_http_exception_handler(request, exc):
+    logger.error(repr(exc))
+    return await http_exception_handler(request, exc)
 
 
 @app.post("/json2xml")
@@ -58,7 +70,7 @@ async def get_record_by_email(email: str | None = None):
 
     if not record:
         raise HTTPException(
-            status_code=404, detail="Record for given email was not found"
+            status_code=404, detail=f"Record for email {email} was not found! "
         )
 
     return record
@@ -81,5 +93,8 @@ async def delete_record_by_email(email: str | None = None):
 @app.get("/users")
 async def get_multiple_users(limit: int | None = 10, offset: int | None = 0):
     if limit < 0 or offset < 0:
-        raise HTTPException(status_code=400, detail="Invalid limit or offset provided!")
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid limit or offset provided! Limit: {limit} Offset: {offset}",
+        )
     return records_db.get_multiple_records(limit, offset)

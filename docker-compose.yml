@@ -33,13 +33,28 @@ services:
       - POSTGRES_DB_NAME=pm_assignment
       - POSTGRES_DB_HOST=postgres-dev
 
-  intg-api-tests:
+  intg-tests:
     build:
       dockerfile: Dockerfile-intg-api-test
-    container_name: intg-api-tests
+    container_name: intg-tests
     depends_on:
       postgres-dev:
         condition: service_healthy
+    command: pytest test/integration
+    environment:
+      - POSTGRES_DB_PASSWORD=PM_password
+      - POSTGRES_DB_USER=PM_user
+      - POSTGRES_DB_NAME=pm_assignment
+      - POSTGRES_DB_HOST=postgres-dev
+
+  api-tests:
+    build:
+      dockerfile: Dockerfile-intg-api-test
+    container_name: api-tests
+    depends_on:
+      postgres-dev:
+        condition: service_healthy
+    command: pytest test/api
     environment:
       - POSTGRES_DB_PASSWORD=PM_password
       - POSTGRES_DB_USER=PM_user

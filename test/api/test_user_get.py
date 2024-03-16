@@ -1,28 +1,29 @@
 from starlette.testclient import TestClient
 from src.main import app
-
-client = TestClient(app)
-
-
-def test_user_get_invalid_email(mocker):
-    mock_db = mocker.Mock()
-    mock_db.get_record_by_email.return_value = []
-    mocker.patch("src.main.records_db", new=mock_db)
-    # API returns 404 if user with given email does not exist
-    response = client.get('/user?email=some_email@gmail.com')
-    assert response.status_code == 404
+from test.integration.conftest import DbIntegrationTestBase
 
 
-def test_user_get_without_email():
-    # API returns 400 Bad Request if user does not provide any email
-    response = client.get('/user')
-    assert response.status_code == 400
+class TestGetUserApi(DbIntegrationTestBase):
+    client = TestClient(app)
 
+    def test_user_get_api(self):
+        # Happy path test that the correct text is returned for an existing user
 
-def test_valid_user_get(mocker):
-    # API returns the text for given valid email address
-    mocker.patch('src.db.RecordsDbRepository.get_record_by_email', return_value=["Result"])
-    response = client.get('/user?email=some_email@gmail.com')
-    body = response.json()
-    assert response.status_code == 200
-    assert body == ["Result"]
+        email = "user@gmail.com"
+        text = "some text"
+        with self.postgresql_connection.cursor() as cursor:
+            # Insert fixture user
+            cursor.execute(
+                "INSERT INTO records (email, text) VALUES (%s, %s)", (email, text)
+            )
+
+            # Get user
+            response = self.client.get(f"/user?email={email}")
+            body = response.json()
+            assert response.status_code == 200
+            assert body[0] == text
+
+    def test_user_get_without_email(self):
+        # API returns 400 Bad Request if user does not provide any email
+        response = self.client.get("/user")
+        assert response.status_code == 400

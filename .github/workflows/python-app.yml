@@ -59,9 +59,13 @@ jobs:
         run: |
           python -m pytest test/unit
 
-      - name: Run API and Integration tests
+      - name: Run Integration tests
         run: |
-          docker compose up intg-api-tests
+          docker compose up intg-tests
+
+      - name: Run API tests
+        run: |
+          docker compose up api-tests
 
 
   publish:

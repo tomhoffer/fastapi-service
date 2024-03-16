@@ -1,16 +1,18 @@
 from test.integration.conftest import DbIntegrationTestBase
 
 
-class TestDeleteUserFromDatabase(DbIntegrationTestBase):
+class TestGetUserFromDatabase(DbIntegrationTestBase):
 
     def test_user_get(self, records_db):
-        # Test that the correct is returned for an existing user
+        # Test that the correct text is returned for an existing user
 
-        email = 'user@gmail.com'
-        text = 'some text'
+        email = "user@gmail.com"
+        text = "some text"
         with self.postgresql_connection.cursor() as cursor:
             # Insert fixture user
-            cursor.execute("INSERT INTO records (email, text) VALUES (%s, %s)", (email, text))
+            cursor.execute(
+                "INSERT INTO records (email, text) VALUES (%s, %s)", (email, text)
+            )
 
             # Get user
             result = records_db.get_record_by_email(email)
@@ -24,7 +26,7 @@ class TestDeleteUserFromDatabase(DbIntegrationTestBase):
 
         with self.postgresql_connection.cursor() as cursor:
             # Get user
-            result = records_db.get_record_by_email('some_email@gmail.com')
+            result = records_db.get_record_by_email("some_email@gmail.com")
 
             # Verify obtained user
             assert result is None

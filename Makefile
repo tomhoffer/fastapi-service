@@ -1,8 +1,11 @@
-run-integration-api-tests:
+run-integration-tests:
 	python -m pytest test/api test/integration
 
 run-unit-tests:
 	python -m pytest test/unit
+
+run-api-tests:
+	python -m pytest test/api test/integration
 
 run-server-local:
 	uvicorn src.main:app --reload --log-config=log_conf.yaml --port 80

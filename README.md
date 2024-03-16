@@ -49,9 +49,6 @@ container using docker compose against which the tests will be executed.
 - `src/scripts`: Contains useful scripts for easier development and testing, as well as database DDL file.
 - `test`: Contains unit, integration and api tests.
 
-## Known issues and limitations
-- DB connection is not restored once lost, server restart is needed
-
 ## Potential improvements for future
 
 I have indentified the following potential improvements for future. I'd be happy to implement them, but I wanted to

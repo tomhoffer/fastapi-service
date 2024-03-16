@@ -19,7 +19,7 @@ CI pipeline just to realize you forgot to format the code :) Install the git hoo
 For this purpose you can run your own server locally or run `make run-postgres-background` to deploy a postgresql
 container using docker-compose.
 
-# Initialize your environment variables
+# Configuration: Initialize your environment variables
 
 Create a file `.env` inside the `/src` directory and set the following env variables. Do not push this file into the
 repository!
@@ -28,6 +28,8 @@ repository!
 - POSTGRES_DB_NAME
 - POSTGRES_DB_USER
 - POSTGRES_DB_PASSWORD
+
+Each variable is parsed using the type specified in `src/config.py` to ensure correct type casting.
 
 ## Run the server
 

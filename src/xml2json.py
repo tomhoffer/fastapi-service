@@ -34,7 +34,7 @@ class XmlToJsonParser:
         else:
             return self._parse_value(element)
 
-    def convert_xml_to_json(self, data: str):
+    def convert_xml_to_json(self, data: str) -> str:
         try:
             root = ET.fromstring(data)
         except ET.ParseError:

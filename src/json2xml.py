@@ -48,7 +48,7 @@ class JsonToXmlParser:
                 item.set("value", self._parse_value(value))
         return item
 
-    def convert_to_xml(self, data: str):
+    def convert_to_xml(self, data: str) -> str:
         try:
             data = json.loads(data)
         except JSONDecodeError:

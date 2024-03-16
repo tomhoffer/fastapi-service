@@ -1,10 +1,12 @@
 import logging
 from typing import Tuple, List
-
-import psycopg
+from psycopg.errors import CheckViolation
 from psycopg_pool import ConnectionPool, PoolTimeout
-
 from src.exceptions import DbUnableToInsertRowException
+
+"""
+    This module provides an implementation of the Postgres database interface.
+"""
 
 
 class DbConnector:
@@ -12,7 +14,7 @@ class DbConnector:
     Connects to the given postgres database
     """
 
-    connection_pool = None
+    connection_pool: ConnectionPool = None
 
     def __init__(self, dbname: str, user: str, password: str, host: str) -> None:
         try:
@@ -41,7 +43,7 @@ class RecordsDbRepository(DbConnector):
                         DO UPDATE SET text = excluded.text""",
                         (email, text),
                     )
-                except psycopg.errors.CheckViolation:
+                except CheckViolation:
                     raise DbUnableToInsertRowException(
                         message=f"Invalid email address provided! Email: {email}"
                     )

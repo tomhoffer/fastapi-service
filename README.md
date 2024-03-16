@@ -25,17 +25,18 @@ Create a file `.env` inside the `/src` directory and set the following env varia
 repository!
 
 - POSTGRES_DB_HOST
-- POSTGRES_DB_NAME 
+- POSTGRES_DB_NAME
 - POSTGRES_DB_USER
 - POSTGRES_DB_PASSWORD
 
 ## Run the server
 
-To run the server locally, use: `run-server-local`
+To run the server locally, use: `make run-server-local`
 
-To run the server inside a docker container, use: `run-server-docker`
+To run the server inside a docker container, use: `make run-server-docker`
 
-By default, server will run on 127.0.0.1:80/
+By default, server will run on `127.0.0.1:80/`. Static files, including the index page for JSON <-> XML conversion are being
+served at `127.0.0.1:80/static`
 
 # Testing
 

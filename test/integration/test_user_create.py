@@ -1,53 +1,62 @@
 import pytest
-from src.db import RecordsDbRepository
 from src.exceptions import DbUnableToInsertRowException
-from test.integration.conftest import DbIntegrationTestBase
 
 
-class TestInsertUserIntoDatabase(DbIntegrationTestBase):
+class TestInsertUserIntoDatabase:
 
-    def test_user_create(self, records_db):
+    @pytest.mark.asyncio
+    async def test_user_create(
+        self, records_db, postgres_async_connection, postgres_setup_and_teardown_async
+    ):
         # Test that user with given email and text was correctly inserted into the database
-        email = 'dummy@gmail.com'
-        text = 'example text'
-        records_db.create_record(email, text)
+        email = "dummy@gmail.com"
+        text = "example text"
+        await records_db.create_record(email, text)
 
         # Verify that the row has been inserted
-        with self.postgresql_connection.cursor() as cursor:
-            cursor.execute("SELECT text FROM records WHERE email = %s", (email,))
-            result = cursor.fetchone()
+        async with postgres_async_connection.cursor() as cursor:
+            await cursor.execute("SELECT text FROM records WHERE email = %s", (email,))
+            result = await cursor.fetchone()
             assert result[0] == text
 
-    def test_user_create_invalid_email(self, records_db):
+    @pytest.mark.asyncio
+    async def test_user_create_invalid_email(
+        self, records_db, postgres_async_connection, postgres_setup_and_teardown_async
+    ):
         # Test that text for user with invalid email was not inserted into the database
-        email = 'invalid_email'
-        text = 'example text'
+        email = "invalid_email"
+        text = "example text"
 
         # Assert that exception was raised based on DB constraint violation
         with pytest.raises(DbUnableToInsertRowException):
-            records_db.create_record(email, text)
+            await records_db.create_record(email, text)
 
         # Check that row was not inserted into the database
-        with self.postgresql_connection.cursor() as cursor:
-            cursor.execute("SELECT text FROM records WHERE email = %s", (email,))
-            result = cursor.fetchone()
+        async with postgres_async_connection.cursor() as cursor:
+            await cursor.execute("SELECT text FROM records WHERE email = %s", (email,))
+            result = await cursor.fetchone()
             assert result is None
 
-    def test_existing_user_is_updated(self, records_db):
+    @pytest.mark.asyncio
+    async def test_existing_user_is_updated(
+        self, records_db, postgres_async_connection, postgres_setup_and_teardown_async
+    ):
         # Test that if the user already exists, his text is updated
-        email = 'dummy@gmail.com'
-        old_text = 'old text'
-        new_text = 'new text'
+        email = "dummy@gmail.com"
+        old_text = "old text"
+        new_text = "new text"
 
         # Create a record with old text
-        with self.postgresql_connection.cursor() as cursor:
-            cursor.execute("INSERT INTO records (email, text) VALUES (%s, %s)", (email, old_text))
+        async with postgres_async_connection.cursor() as cursor:
+            await cursor.execute(
+                "INSERT INTO records (email, text) VALUES (%s, %s)", (email, old_text)
+            )
 
         # Update the text
-        records_db.create_record(email, new_text)
+        await records_db.create_record(email, new_text)
 
         # Verify that the row has been updated
-        with self.postgresql_connection.cursor() as cursor:
-            cursor.execute("SELECT text FROM records WHERE email = %s", (email,))
-            result = cursor.fetchone()
+        async with postgres_async_connection.cursor() as cursor:
+            await cursor.execute("SELECT text FROM records WHERE email = %s", (email,))
+            result = await cursor.fetchone()
             assert result[0] == new_text

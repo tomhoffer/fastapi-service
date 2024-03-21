@@ -1,32 +1,37 @@
 from starlette.testclient import TestClient
 from src.main import app
-from test.integration.conftest import DbIntegrationTestBase
 
 
-class TestGetMultipleUsersApi(DbIntegrationTestBase):
+class TestGetMultipleUsersApi:
     client = TestClient(app)
 
-    def test_user_multiple_get_api(self):
+    def test_user_multiple_get_api(
+        self, postgres_connection, postgres_setup_and_teardown
+    ):
         # Happy path test that multiple users can be retrieved
 
         emails = ["user1@gmail.com", "user2@gmail.com", "user3@gmail.com"]
         texts = ["user1 text", "user2 text", "user3 text"]
-        with self.postgresql_connection.cursor() as cursor:
-            # Insert fixture user
-            for email, text in zip(emails, texts):
-                cursor.execute(
-                    "INSERT INTO records (email, text) VALUES (%s, %s)", (email, text)
-                )
 
-            # Get user
-            response = self.client.get(f"/users")
-            body = response.json()
-            assert response.status_code == 200
-            assert body == [
-                ["user1@gmail.com", "user1 text"],
-                ["user2@gmail.com", "user2 text"],
-                ["user3@gmail.com", "user3 text"],
-            ]
+        # Need to use client as a context manager to invoke the @asynccontextmanager lifespan method on the server
+        with TestClient(app) as client:
+            with postgres_connection.cursor() as cursor:
+                # Insert fixture user
+                for email, text in zip(emails, texts):
+                    cursor.execute(
+                        "INSERT INTO records (email, text) VALUES (%s, %s)",
+                        (email, text),
+                    )
+
+                # Get user
+                response = client.get(f"/users")
+                body = response.json()
+                assert response.status_code == 200
+                assert body == [
+                    ["user1@gmail.com", "user1 text"],
+                    ["user2@gmail.com", "user2 text"],
+                    ["user3@gmail.com", "user3 text"],
+                ]
 
     def test_user_get_multiple_invalid_limit_offset(self):
         # API returns 400 bad request when user provides invalid limit parameter

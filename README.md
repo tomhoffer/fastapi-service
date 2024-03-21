@@ -37,7 +37,8 @@ To run the server locally, use: `make run-server-local`
 
 To run the server inside a docker container, use: `make run-server-docker`
 
-By default, server will run on `127.0.0.1:80/`. Static files, including the index page for JSON <-> XML conversion are being
+By default, server will run on `127.0.0.1:80/`. Static files, including the index page for JSON <-> XML conversion are
+being
 served at `127.0.0.1:80/static`
 
 # Testing
@@ -73,11 +74,6 @@ own PostgreSQL container using docker compose against which the tests will be ex
 I have indentified the following potential improvements for future. I'd be happy to implement them, but I wanted to
 avoid over-engineering without confirming these improvements are needed.
 
-- The current implementation does not make use of asynchronous capabilities of the psycopg library. If higher
-  performance is required, it might be worth rewriting the server part to use asyncio as the main purpose of the
-  database part of the server is to make I/O calls to the database. The XML<->JSON conversion part would be extracted to
-  a separate server so that it doesn't block the event loop when processing large inputs.
-
 - Read performance of the DB Selects could be improved by creating an index over the email column. Enabling it however
   introduces a penalty when it comes to `INSERT`, `UPDATE` and `DELETE` queries.
 
@@ -91,3 +87,32 @@ avoid over-engineering without confirming these improvements are needed.
   would use a well-established library for XML parsing if this was a production service.
 
 - Circuit breaking, Caching, Rate-limiting and server replication (Load balancing) could help increase performance.
+
+- Production deployment: I would use gunicorn with uvicorn workers as described
+  here: https://fastapi.tiangolo.com/deployment/server-workers/
+
+# Update 21.3.2024 (After submission)
+
+I had some free time today in the evening, so I decided to rewrite the server part in a way that is utilizes the full
+async capabilities of psycopg library since we are using an ASGI server.
+
+I have performed a simple Locust test to confirm the performance gain (`locustfile.py`). Test was executed against an
+environment which significantly benefits from the async rewrite (slow I/O operations, single worker). During the test,
+following criteria applied:
+
+- DB contained 0.5mil rows (not many but enough to demonstrate the performance gain)
+- There was intentionally no index over the email column so that the queries are slow
+- Test was executing calls to `/users` endpoint with randomized offset parameter to prevent PostgreSQL and psycopg from
+  returning cached results
+- Test was running against a server running locally with 1 uvicorn worker. This is not a proper production deployment
+  setup (see Potential improvements for future) but it is enough for demonstration purposes.
+- Test was simulating 50 parallel users.
+
+The benchmark for the synchronous (previous) version looks like the following. 95p response time was around 6s and
+throughput around 9RPS.
+
+![Synchronous implementation of the server](docs/sync.png)
+
+After the rewrite to async code, 95p response times dropped to 1,7s and throughput increased to 30RPS.
+
+![Synchronous implementation of the server](docs/async.png)

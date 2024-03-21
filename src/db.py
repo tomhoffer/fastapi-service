@@ -1,7 +1,7 @@
 import logging
 from typing import Tuple, List
 from psycopg.errors import CheckViolation
-from psycopg_pool import ConnectionPool, PoolTimeout, AsyncConnectionPool
+from psycopg_pool import PoolTimeout, AsyncConnectionPool
 from src.exceptions import DbUnableToInsertRowException
 
 """

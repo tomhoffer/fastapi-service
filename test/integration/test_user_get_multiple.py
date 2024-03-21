@@ -1,64 +1,73 @@
 from string import ascii_lowercase
 
-from test.integration.conftest import DbIntegrationTestBase
+import pytest
 
 
-class TestGetMultipleUsersFromDatabase(DbIntegrationTestBase):
+class TestGetMultipleUsersFromDatabase:
 
-    def test_user_get_multiple(self, records_db):
+    @pytest.mark.asyncio
+    async def test_user_get_multiple(
+        self, records_db, postgres_async_connection, postgres_setup_and_teardown_async
+    ):
         # Test that multiple users are returned
 
         def is_sorted_by_email(lst):
             return all(lst[i][0] <= lst[i + 1][0] for i in range(len(lst) - 1))
 
-        with self.postgresql_connection.cursor() as cursor:
+        async with postgres_async_connection.cursor() as cursor:
             # Insert fixture users
             emails = [ascii_lowercase[i] + "@gmail.com" for i in range(5)]
             for email in emails:
-                cursor.execute(
+                await cursor.execute(
                     "INSERT INTO records (email, text) VALUES (%s, %s)",
                     (email, "some text"),
                 )
 
             # Get multiple users
-            result = records_db.get_multiple_records(limit=10, offset=0)
+            result = await records_db.get_multiple_records(limit=10, offset=0)
 
             # Verify obtained users
             assert len(result) == 5
             assert is_sorted_by_email(result)
 
-    def test_user_get_multiple_limit_reached(self, records_db):
+    @pytest.mark.asyncio
+    async def test_user_get_multiple_limit_reached(
+        self, records_db, postgres_async_connection, postgres_setup_and_teardown_async
+    ):
         # Test that maximum of 10 users are returned even if user specifies higher limit
 
-        with self.postgresql_connection.cursor() as cursor:
+        async with postgres_async_connection.cursor() as cursor:
             # Insert fixture users
             emails = [ascii_lowercase[i] + "@gmail.com" for i in range(15)]
             for email in emails:
-                cursor.execute(
+                await cursor.execute(
                     "INSERT INTO records (email, text) VALUES (%s, %s)",
                     (email, "some text"),
                 )
 
             # Get multiple users
-            result = records_db.get_multiple_records(limit=15, offset=0)
+            result = await records_db.get_multiple_records(limit=15, offset=0)
 
             # Verify obtained users
             assert len(result) == 10
 
-    def test_user_get_multiple_limit_offset(self, records_db):
+    @pytest.mark.asyncio
+    async def test_user_get_multiple_limit_offset(
+        self, records_db, postgres_async_connection, postgres_setup_and_teardown_async
+    ):
         # Test that limit and offset parameters are respected
 
-        with self.postgresql_connection.cursor() as cursor:
+        async with postgres_async_connection.cursor() as cursor:
             # Insert fixture users
             emails = [ascii_lowercase[i] + "@gmail.com" for i in range(10)]
             for email in emails:
-                cursor.execute(
+                await cursor.execute(
                     "INSERT INTO records (email, text) VALUES (%s, %s)",
                     (email, "some text"),
                 )
 
             # Get multiple users
-            result = records_db.get_multiple_records(limit=5, offset=5)
+            result = await records_db.get_multiple_records(limit=5, offset=5)
 
             # Verify obtained users
             assert len(result) == 5
@@ -70,11 +79,14 @@ class TestGetMultipleUsersFromDatabase(DbIntegrationTestBase):
                 ("j@gmail.com", "some text"),
             ]
 
-    def test_user_get_multiple_empty_db(self, records_db):
+    @pytest.mark.asyncio
+    async def test_user_get_multiple_empty_db(
+        self, records_db, postgres_setup_and_teardown_async
+    ):
         # Test that no user is returned when db is empty
 
         # Get users
-        result = records_db.get_multiple_records(limit=10, offset=0)
+        result = await records_db.get_multiple_records(limit=10, offset=0)
 
         # Verify obtained users
         assert len(result) == 0

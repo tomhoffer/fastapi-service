@@ -8,17 +8,10 @@ from starlette.responses import PlainTextResponse
 from starlette.staticfiles import StaticFiles
 from src.config import Config
 from src.db import RecordsDbRepository
-from src.exceptions import (
-    JsonToXmlConversionException,
-    XmlToJsonConversionException,
-    DbUnableToInsertRowException,
-)
-from src.json2xml import JsonToXmlParser
+from src.exceptions import DbUnableToInsertRowException,
 from src.models import EmailRecord
-from src.xml2json import XmlToJsonParser
 
-json_to_xml_parser = JsonToXmlParser()
-xml_to_json_parser = XmlToJsonParser()
+
 logger = logging.getLogger(__name__)
 records_db = RecordsDbRepository()
 
@@ -52,24 +45,6 @@ async def validation_exception_handler(request, exc):
 async def custom_http_exception_handler(request, exc):
     logger.error(repr(exc))
     return await http_exception_handler(request, exc)
-
-
-@app.post("/json2xml")
-async def json2xml(request: Request):
-    body_raw = await request.body()
-    try:
-        return json_to_xml_parser.convert_to_xml(body_raw.decode("utf-8"))
-    except JsonToXmlConversionException as e:
-        raise HTTPException(status_code=400, detail=e.message)
-
-
-@app.post("/xml2json")
-async def xml2json(request: Request):
-    body_raw = await request.body()
-    try:
-        return xml_to_json_parser.convert_xml_to_json(body_raw.decode("utf-8"))
-    except XmlToJsonConversionException as e:
-        raise HTTPException(status_code=400, detail=e.message)
 
 
 @app.get("/user")

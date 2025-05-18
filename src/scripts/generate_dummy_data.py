@@ -9,7 +9,7 @@ f = faker.Faker()
 connection = psycopg2.connect(
     dbname="pm_assignment", user="PM_user", password="PM_password", host="localhost"
 )
-connection.set_session(autocommit=True)
+connection.autocommit = True
 
 with connection.cursor() as cursor:
     cursor.execute(

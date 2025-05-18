@@ -6,15 +6,15 @@ services:
     ports:
       - 5432:5432
     volumes:
-      - ~/apps/postgres:/var/lib/postgresql/data
+      - postgres-data:/var/lib/postgresql/data
       - ./src/scripts/tables.sql:/docker-entrypoint-initdb.d/init.sql
 
     environment:
-      - POSTGRES_PASSWORD=PM_password
-      - POSTGRES_USER=PM_user
-      - POSTGRES_DB=pm_assignment
+      - POSTGRES_PASSWORD=Password
+      - POSTGRES_USER=User
+      - POSTGRES_DB=dummy_db
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U PM_user -d pm_assignment" ]
+      test: [ "CMD-SHELL", "pg_isready -U User -d dummy_db" ]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -60,3 +60,6 @@ services:
       - POSTGRES_DB_USER=PM_user
       - POSTGRES_DB_NAME=pm_assignment
       - POSTGRES_DB_HOST=postgres-dev
+
+volumes:
+  postgres-data:

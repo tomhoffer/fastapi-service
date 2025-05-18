@@ -1,11 +1,12 @@
 import logging
 from typing import Tuple, List
+import psycopg
 from psycopg.errors import CheckViolation
-from psycopg_pool import PoolTimeout, AsyncConnectionPool
+from psycopg_pool import AsyncConnectionPool
 from src.exceptions import DbUnableToInsertRowException
 
 """
-    This module provides an implementation of the Postgres database interface.
+    This module provides an implementation of the Postgres database interface using psycopg3 and async connection pool.
 """
 
 
@@ -13,32 +14,31 @@ class DbConnector:
     """
     Connects to the given postgres database
     """
+    pool: AsyncConnectionPool = None
 
-    async_connection_pool: AsyncConnectionPool = None
-
-    async def init_pool(self, dbname: str, user: str, password: str, host: str):
+    async def init_pool(self, dbname: str, user: str, password: str, host: str, min_size=1, max_size=10):
         try:
-            self.async_connection_pool = AsyncConnectionPool(
-                open=False,
-                conninfo=f"dbname={dbname} user={user} password={password} host={host}",
+            self.pool = AsyncConnectionPool(
+                f"dbname={dbname} user={user} password={password} host={host}",
+                min_size=min_size,
+                max_size=max_size,
+                open=True
             )
-            await self.async_connection_pool.open()
-        except PoolTimeout as e:
-            logging.critical(
-                f"Could not initialize the connection pool for the PostgreSQL database! {e}"
-            )
+        except Exception as e:
+            logging.critical(f"Could not initialize the connection pool for the PostgreSQL database! {e}")
 
     async def close_pool(self):
-        return await self.async_connection_pool.close()
+        if self.pool:
+            await self.pool.close()
 
 
 class RecordsDbRepository(DbConnector):
 
     async def create_record(self, email: str, text: str) -> None:
-        async with self.async_connection_pool.connection() as connection:
-            async with connection.cursor() as curs:
+        async with self.pool.connection() as conn:
+            async with conn.cursor() as curs:
                 try:
-                    return await curs.execute(
+                    await curs.execute(
                         """INSERT INTO records (email, text) VALUES (%s, %s) ON CONFLICT (email)
                         DO UPDATE SET text = excluded.text""",
                         (email, text),
@@ -48,12 +48,10 @@ class RecordsDbRepository(DbConnector):
                         message=f"Invalid email address provided! Email: {email}"
                     )
 
-    async def get_multiple_records(
-        self, limit: int, offset: int
-    ) -> List[Tuple[str, str]]:
+    async def get_multiple_records(self, limit: int, offset: int) -> List[Tuple[str, str]]:
         limit = 10 if limit > 10 else limit
-        async with self.async_connection_pool.connection() as connection:
-            async with connection.cursor() as curs:
+        async with self.pool.connection() as conn:
+            async with conn.cursor() as curs:
                 await curs.execute(
                     """SELECT email, text FROM records ORDER BY email LIMIT %s OFFSET %s""",
                     (limit, offset),
@@ -61,16 +59,16 @@ class RecordsDbRepository(DbConnector):
                 return await curs.fetchall()
 
     async def get_record_by_email(self, email: str) -> Tuple[str] | None:
-        async with self.async_connection_pool.connection() as connection:
-            async with connection.cursor() as curs:
+        async with self.pool.connection() as conn:
+            async with conn.cursor() as curs:
                 await curs.execute(
                     "SELECT text FROM records WHERE email = %s", (email,)
                 )
                 return await curs.fetchone()
 
     async def delete_record(self, email: str) -> None:
-        async with self.async_connection_pool.connection() as connection:
-            async with connection.cursor() as curs:
-                return await curs.execute(
+        async with self.pool.connection() as conn:
+            async with conn.cursor() as curs:
+                await curs.execute(
                     "DELETE FROM records WHERE email = %s", (email,)
                 )

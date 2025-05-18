@@ -8,7 +8,7 @@ run-api-tests:
 	python -m pytest test/api
 
 run-server-local:
-	uvicorn src.main:app --reload --log-config=log_conf.yaml --port 80
+	uvicorn src.main:app --reload --log-config=log_conf.yaml --port 8000
 
 run-server-docker:
 	docker compose up fastapi-server

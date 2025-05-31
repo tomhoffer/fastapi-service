@@ -1,6 +1,14 @@
-# powerful-medical-assignment
+# Fastapi-service
 
-This repository hosts my implementation of the assignment.
+A dummy **FastAPI** ASGI service utilizing:
+- Python
+- FastAPI + Uvicorn ASGI server
+- PostgreSQL + psycopg for async DB access over a connection pool
+- Docker & docker-compose
+- Pytest, pytest-asyncio, HTTPX for unit, integration and api tests
+- Locust for performance testing
+- Black, Flake8, pre-commit, make
+- Pydantic
 
 # How to run locally
 
@@ -10,14 +18,15 @@ This repository hosts my implementation of the assignment.
 
 ## Initialize the pre-commit hook
 
-The git hook automatically formats the code using the black formatter on every commit so you don't have to wait for the
-CI pipeline just to realize you forgot to format the code :) Install the git hook using:
+The git hook automatically formats the code using the black formatter on every commit. Install the git hook using:
 `pre-commit install `
 
 ## Run your PostgreSQL database server
 
-For this purpose you can run your own server locally or run `make run-postgres-background` to deploy a postgresql
+You can run your own server locally or run `make run-postgres-background` to deploy a postgresql
 container using docker-compose.
+
+To generate dummy data, run
 
 # Configuration: Initialize your environment variables
 
@@ -37,9 +46,7 @@ To run the server locally, use: `make run-server-local`
 
 To run the server inside a docker container, use: `make run-server-docker`
 
-By default, server will run on `127.0.0.1:80/`. Static files, including the index page for JSON <-> XML conversion are
-being
-served at `127.0.0.1:80/static`
+By default, server will run on `127.0.0.1:8000/`.
 
 # Testing
 
@@ -49,10 +56,6 @@ Tests in this repository are spit into 3 directories:
 - `test/integration`: Integration tests which use a real dependency instead of the mocked one. Example: Method should
   actually insert a row into the PostgreSQL DB.
 - `test/api`: Contains API tests using the HTTPX TestClient. No dependencies are mocked in this case as well.
-
-I'll be happy to adopt your naming conventions and definitions for API/E2E/Integration type of tests as from my
-experience, test naming conventions and understanding of what API/E2E/Integration tests are, usually differ from
-company to company.
 
 ## Running the tests
 
@@ -71,48 +74,22 @@ own PostgreSQL container using docker compose against which the tests will be ex
 
 ## Potential improvements for future
 
-I have indentified the following potential improvements for future. I'd be happy to implement them, but I wanted to
-avoid over-engineering without confirming these improvements are needed.
+- Circuit breaking, Caching and server replication (Load balancing) could help increase performance.
 
-- Read performance of the DB Selects could be improved by creating an index over the email column. Enabling it however
-  introduces a penalty when it comes to `INSERT`, `UPDATE` and `DELETE` queries.
+- Metrics collection & Monitoring using Prometheus and Grafana
 
-- Deletion performance could be improved by implementing soft_deletes and deleting the records in bulk during a
-  low-usage period. But again, it introduces trade-offs in terms of memory, foreign key management and more complex
-  queries.
+- Use Alembic for db migrations
 
-- Security issue: Solution does not limit the user input size submitted to the `/json2xml` and `/json2xml` endpoints,
-  nor does it sanitize the xml input to protect
-  against [common XML vulnerabilities](https://cheatsheetseries.owasp.org/cheatsheets/XML_Security_Cheat_Sheet.html). I
-  would use a well-established library for XML parsing if this was a production service.
+- Structured logging (JSON logs)
 
-- Circuit breaking, Caching, Rate-limiting and server replication (Load balancing) could help increase performance.
+# Performance
 
-- Production deployment: I would use gunicorn with uvicorn workers as described
-  here: https://fastapi.tiangolo.com/deployment/server-workers/
+I have performed a simple Locust test to assess the performance (`locustfile.py`). The service was able to serve 3,5k RPS, fetching a random user from the DB.
 
-# Update 21.3.2024 (After submission)
-
-I had some free time today in the evening, so I decided to rewrite the server part in a way that is utilizes the full
-async capabilities of psycopg library since we are using an ASGI server.
-
-I have performed a simple Locust test to confirm the performance gain (`locustfile.py`). Test was executed against an
-environment which significantly benefits from the async rewrite (slow I/O operations, single worker). During the test,
-following criteria applied:
-
-- DB contained 0.5mil rows (not many but enough to demonstrate the performance gain)
-- There was intentionally no index over the email column so that the queries are slow
-- Test was executing calls to `/users` endpoint with randomized offset parameter to prevent PostgreSQL and psycopg from
-  returning cached results
-- Test was running against a server running locally with 1 uvicorn worker. This is not a proper production deployment
-  setup (see Potential improvements for future) but it is enough for demonstration purposes.
+- Hardware: M3 Base, 24Gb RAM
+- DB contained 10mil rows, indexes on email and id columns
+- Service was running in docker composition with a single replica and 1 uvicorn worker
+- Test was executing calls to `/user` endpoint with randomized id to prevent PostgreSQL and psycopg from returning cached results
 - Test was simulating 50 parallel users.
 
-The benchmark for the synchronous (previous) version looks like the following. 95p response time was around 6s and
-throughput around 9RPS.
-
-![Synchronous implementation of the server](docs/sync.png)
-
-After the rewrite to async code, 95p response times dropped to 1,7s and throughput increased to 30RPS.
-
-![Synchronous implementation of the server](docs/async.png)
+![Synchronous implementation of the server](docs/benchmark.png)

@@ -66,6 +66,14 @@ class RecordsDbRepository(DbConnector):
                 )
                 return await curs.fetchone()
 
+    async def get_record_by_id(self, record_id: int) -> Tuple[int, str, str] | None:
+        async with self.pool.connection() as conn:
+            async with conn.cursor() as curs:
+                await curs.execute(
+                    "SELECT id, email, text FROM records WHERE id = %s", (record_id,)
+                )
+                return await curs.fetchone()
+
     async def delete_record(self, email: str) -> None:
         async with self.pool.connection() as conn:
             async with conn.cursor() as curs:

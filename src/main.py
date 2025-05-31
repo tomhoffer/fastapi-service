@@ -6,7 +6,7 @@ from starlette.responses import PlainTextResponse
 from src.config import Config
 from src.db import RecordsDbRepository
 from src.exceptions import DbUnableToInsertRowException
-from src.models import EmailRecord
+from src.models import EmailRecord, RecordOutput
 
 logger = logging.getLogger(__name__)
 records_db = RecordsDbRepository()
@@ -21,7 +21,7 @@ async def startup_event():
         password=Config.get_value("POSTGRES_DB_PASSWORD"),
         host=Config.get_value("POSTGRES_DB_HOST"),
         min_size=1,
-        max_size=10
+        max_size=16
     )
 
 @app.on_event("shutdown")
@@ -77,3 +77,12 @@ async def get_multiple_users(limit: int | None = 10, offset: int | None = 0):
             detail=f"Invalid limit or offset provided! Limit: {limit} Offset: {offset}",
         )
     return await records_db.get_multiple_records(limit, offset)
+
+@app.get("/user/{user_id}", response_model=RecordOutput)
+async def get_record_by_id_endpoint(user_id: int):
+    record_tuple = await records_db.get_record_by_id(user_id)
+    if not record_tuple:
+        raise HTTPException(
+            status_code=404, detail=f"Record with ID {user_id} was not found!"
+        )
+    return RecordOutput(id=record_tuple[0], email=record_tuple[1], text=record_tuple[2])
